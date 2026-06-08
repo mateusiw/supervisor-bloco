@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Supervisor de Bloco - SPG</title>
-    <link rel="icon" type="image/png" href="https://i.imgur.com/f7UnnL0.png">
-    <link rel="apple-touch-icon" href="https://i.imgur.com/f7UnnL0.png">
-    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="theme-color" content="#16a34a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SPG Supervisor">
+    <meta name="apple-mobile-web-app-title" content="SPG Bloco">
+    <meta name="mobile-web-app-capable" content="yes">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
@@ -1358,6 +1360,16 @@
             document.querySelectorAll('[id^="manejo-"][id$="-ok"]').forEach(b => b.textContent = 'Adequado');
             document.querySelectorAll('[id^="irrig-"][id$="-ok"]').forEach(b => b.textContent = 'Conforme');
         };
+    </script>
+
+    <!-- PWA: Service Worker para instalação e uso offline -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(err => console.warn('SW não registrado:', err));
+            });
+        }
     </script>
 </body>
 </html>
