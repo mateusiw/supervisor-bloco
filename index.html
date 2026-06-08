@@ -1354,15 +1354,22 @@
         }
 
         // ── PWA ───────────────────────────────────────────────────────────
-        const BRAND_LOGO_SVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <rect width="512" height="512" rx="100" fill="#16a34a"/>
-            <circle cx="256" cy="170" r="72" fill="#bbf7d0"/>
-            <circle cx="184" cy="210" r="54" fill="#86efac"/>
-            <circle cx="328" cy="210" r="54" fill="#86efac"/>
-            <rect x="232" y="234" width="48" height="108" rx="12" fill="#bbf7d0"/>
-            <text x="256" y="430" font-family="Segoe UI, Arial, sans-serif" font-size="90" font-weight="700" letter-spacing="3" fill="#0f766e" text-anchor="middle">SPG</text>
-        </svg>`.trim();
+        const BRAND_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#ffffff"/>
+  <rect x="34" y="48" width="352" height="222" rx="38" fill="#8BBDBD"/>
+  <polygon points="56,270 56,334 148,270" fill="#8BBDBD"/>
+  <rect x="76" y="94" width="240" height="22" rx="11" fill="white"/>
+  <rect x="76" y="136" width="195" height="22" rx="11" fill="white"/>
+  <rect x="76" y="178" width="220" height="22" rx="11" fill="white"/>
+  <circle cx="390" cy="84" r="70" fill="#007575"/>
+  <polyline points="356,84 378,108 428,56" stroke="white" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <ellipse cx="254" cy="304" rx="77" ry="58" fill="#454545"/>
+  <ellipse cx="254" cy="330" rx="70" ry="72" fill="#F5A080"/>
+  <rect x="222" y="384" width="64" height="34" fill="#F5A080"/>
+  <path d="M128,430 C128,400 158,392 190,388 L222,382 L286,382 L322,388 C354,392 384,400 384,430 L384,512 L128,512 Z" fill="#6088C2"/>
+  <rect x="148" y="426" width="25" height="86" rx="12" fill="#4F72AA"/>
+  <rect x="339" y="426" width="25" height="86" rx="12" fill="#4F72AA"/>
+</svg>`.trim();
 
         function getBrandLogoDataUri() {
             return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(BRAND_LOGO_SVG)}`;
