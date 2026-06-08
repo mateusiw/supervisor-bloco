@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Supervisor de Bloco - SPG</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/f7UnnL0.png">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/f7UnnL0.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SPG Supervisor">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        input, select, textarea { line-height: 1.5; }
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .vistoria-btn { transition: all 0.15s ease; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-20 select-none">
+
+    <!-- Navbar -->
+    <div class="bg-white border-b border-slate-200 px-4 py-3 flex flex-col md:flex-row justify-between items-center shadow-sm sticky top-0 z-40 gap-3">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <div>
+                <h1 class="text-sm font-bold text-slate-800 leading-tight">SPG SUPERVISOR DE BLOCO</h1>
+                <p class="text-[10px] text-slate-500 font-medium">Monitoramento de Brócolis</p>
+            </div>
+        </div>
+        <div class="flex gap-2 w-full md:w-auto">
+            <button onclick="downloadPDF()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg active:scale-95 transition-all whitespace-nowrap">
+                <i data-lucide="file-down" class="w-4 h-4"></i>
+                <span>Gerar e Baixar PDF</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 flex flex-col lg:flex-row gap-8 mt-4">
+
+        <!-- COLUNA FORMULÁRIO -->
+        <div class="w-full lg:w-2/5 space-y-4">
+
+            <!-- 1. IDENTIFICAÇÃO E FENOLOGIA -->
+            <div class="bg-emerald-50 p-5 rounded-2xl shadow-sm border border-emerald-100">
+                <h2 class="text-sm font-bold text-emerald-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="leaf" class="text-emerald-600 w-4 h-4"></i> Identificação e Fenologia
+                </h2>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-emerald-600 uppercase mb-1 block">Local <span class="text-red-500">*</span></label>
+                        <select id="partner" onchange="updateState()" class="w-full p-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white">
+                            <option value="">Selecione...</option>
+                            <option value="SPG Oásis">SPG Oásis</option>
+                            <option value="SPG Sede">SPG Sede</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-emerald-600 uppercase mb-1 block">Data <span class="text-red-500">*</span></label>
+                        <input type="date" id="appDate" onchange="updateState()" class="w-full p-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white text-slate-600">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Lote (Bloco) <span class="text-red-500">*</span></label>
+                        <select id="lote" onchange="updateState()" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Estágio da Inflorescência</label>
+                        <select id="estagio" onchange="updateState()" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white">
+                            <option value="">Selecione...</option>
+                            <option value="Vegetativo">Vegetativo</option>
+                            <option value="Iniciação Floral">Iniciação Floral</option>
+                            <option value="Botão Floral Visível">Botão Floral Visível</option>
+                            <option value="Inflorescência em Desenvolvimento">Inflorescência em Desenvolvimento</option>
+                            <option value="Ponto de Colheita">Ponto de Colheita</option>
+                            <option value="Pós-Colheita">Pós-Colheita</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-emerald-600 uppercase mb-1 block">Supervisor do Bloco</label>
+                        <input type="text" id="supervisor" oninput="updateState()" placeholder="Nome do responsável" class="w-full p-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Qtd. de Plantas</label>
+                        <input type="text" inputmode="numeric" id="qtdPlantas" oninput="fmtQtdPlantas(this)" placeholder="Ex: 1.200" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SELETOR DE VISTORIAS -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xs font-bold text-slate-600 mb-2 flex items-center gap-2">
+                    <i data-lucide="clipboard-check" class="text-slate-400 w-4 h-4"></i> Vistorias Realizadas
+                </h2>
+                <p class="text-[9px] text-slate-400 font-medium mb-3 uppercase tracking-wider">Selecione os tipos de vistoria feitos nesta visita</p>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="toggleVistoria('pragas')" id="btn-v-pragas"
+                        class="vistoria-btn px-3 py-2 rounded-xl text-xs border-2 font-bold flex items-center gap-1.5 active:scale-95 border-slate-200 bg-slate-50 text-slate-400">
+                        <i data-lucide="bug" class="w-3 h-3"></i> Pragas e Doenças
+                    </button>
+                    <button type="button" onclick="toggleVistoria('manejo')" id="btn-v-manejo"
+                        class="vistoria-btn px-3 py-2 rounded-xl text-xs border-2 font-bold flex items-center gap-1.5 active:scale-95 border-slate-200 bg-slate-50 text-slate-400">
+                        <i data-lucide="flask-conical" class="w-3 h-3"></i> Manejo Nutricional
+                    </button>
+                    <button type="button" onclick="toggleVistoria('irrigacao')" id="btn-v-irrigacao"
+                        class="vistoria-btn px-3 py-2 rounded-xl text-xs border-2 font-bold flex items-center gap-1.5 active:scale-95 border-slate-200 bg-slate-50 text-slate-400">
+                        <i data-lucide="droplets" class="w-3 h-3"></i> Irrigação do Bloco
+                    </button>
+                    <button type="button" onclick="toggleVistoria('limpeza')" id="btn-v-limpeza"
+                        class="vistoria-btn px-3 py-2 rounded-xl text-xs border-2 font-bold flex items-center gap-1.5 active:scale-95 border-slate-200 bg-slate-50 text-slate-400">
+                        <i data-lucide="scissors" class="w-3 h-3"></i> Limpeza do Bloco
+                    </button>
+                    <button type="button" onclick="toggleVistoria('transplantio')" id="btn-v-transplantio"
+                        class="vistoria-btn px-3 py-2 rounded-xl text-xs border-2 font-bold flex items-center gap-1.5 active:scale-95 border-slate-200 bg-slate-50 text-slate-400">
+                        <i data-lucide="sprout" class="w-3 h-3"></i> Transplantio
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. MONITORAMENTO DE PRAGAS E DOENÇAS -->
+            <div id="section-pragas" class="bg-orange-50 p-5 rounded-2xl shadow-sm border border-orange-100">
+                <h2 class="text-sm font-bold text-orange-800 mb-1 flex items-center gap-2">
+                    <i data-lucide="bug" class="text-orange-600 w-4 h-4"></i> Pragas e Doenças
+                </h2>
+                <p class="text-[9px] text-orange-400 font-bold uppercase tracking-wider mb-4">Ausente · Atenção · Detectado</p>
+                <!-- Separador Saúde Geral -->
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-1">Saúde Geral</p>
+                <div class="space-y-2 mb-4">
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Aspecto geral das plantas <span class="font-normal text-slate-400">(vigor / coloração)</span></span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','aspectoGeral','ok')" id="pragas-aspectoGeral-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','aspectoGeral','atencao')" id="pragas-aspectoGeral-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','aspectoGeral','problema')" id="pragas-aspectoGeral-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Separador Pragas -->
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Pragas</p>
+                <div class="space-y-2 mb-4">
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Traça-das-Crucíferas</span><span class="text-[9px] text-slate-400 ml-1 italic">Plutella xylostella</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','traca','ok')" id="pragas-traca-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','traca','atencao')" id="pragas-traca-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','traca','problema')" id="pragas-traca-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Pulgões</span><span class="text-[9px] text-slate-400 ml-1 italic">Brevicoryne brassicae</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','pugoes','ok')" id="pragas-pugoes-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','pugoes','atencao')" id="pragas-pugoes-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','pugoes','problema')" id="pragas-pugoes-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Lagarta-da-Couve</span><span class="text-[9px] text-slate-400 ml-1 italic">Ascia monuste</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','lagarta','ok')" id="pragas-lagarta-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','lagarta','atencao')" id="pragas-lagarta-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','lagarta','problema')" id="pragas-lagarta-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Mosca-Branca</span><span class="text-[9px] text-slate-400 ml-1 italic">Bemisia tabaci</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','moscaBranca','ok')" id="pragas-moscaBranca-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','moscaBranca','atencao')" id="pragas-moscaBranca-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','moscaBranca','problema')" id="pragas-moscaBranca-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Ácaros</span><span class="text-[9px] text-slate-400 ml-1 italic">Tetranychus urticae</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','acaros','ok')" id="pragas-acaros-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','acaros','atencao')" id="pragas-acaros-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','acaros','problema')" id="pragas-acaros-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Separador Doenças / Fungos -->
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Doenças e Fungos</p>
+                <div class="space-y-2 mb-4">
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Podridão Negra</span><span class="text-[9px] text-slate-400 ml-1 italic">Xanthomonas campestris</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','podridaoNegra','ok')" id="pragas-podridaoNegra-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','podridaoNegra','atencao')" id="pragas-podridaoNegra-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','podridaoNegra','problema')" id="pragas-podridaoNegra-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Míldio</span><span class="text-[9px] text-slate-400 ml-1 italic">Peronospora parasitica</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','mildio','ok')" id="pragas-mildio-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','mildio','atencao')" id="pragas-mildio-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','mildio','problema')" id="pragas-mildio-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Alternária</span><span class="text-[9px] text-slate-400 ml-1 italic">Alternaria brassicae</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','alternaria','ok')" id="pragas-alternaria-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','alternaria','atencao')" id="pragas-alternaria-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','alternaria','problema')" id="pragas-alternaria-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Podridão-Mole</span><span class="text-[9px] text-slate-400 ml-1 italic">Pectobacterium carotovorum</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','podridaoMole','ok')" id="pragas-podridaoMole-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','podridaoMole','atencao')" id="pragas-podridaoMole-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','podridaoMole','problema')" id="pragas-podridaoMole-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-orange-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <div><span class="text-xs font-bold text-slate-700">Esclerotínia</span><span class="text-[9px] text-slate-400 ml-1 italic">Sclerotinia sclerotiorum</span></div>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('pragas','esclerotinia','ok')" id="pragas-esclerotinia-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('pragas','esclerotinia','atencao')" id="pragas-esclerotinia-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('pragas','esclerotinia','problema')" id="pragas-esclerotinia-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Problema</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Observações sobre Pragas e Doenças</label>
+                    <input type="text" id="pragas-obs" oninput="updateState()" placeholder="Ex: Traça com incidência crescente na bordadura norte..." class="w-full p-2 border border-orange-200 rounded-lg text-sm bg-white focus:ring-1 focus:ring-orange-400 outline-none">
+                </div>
+                <div class="pt-3 border-t border-orange-100">
+                    <div id="pragas-fotos-grid" class="grid grid-cols-5 gap-1 mb-1.5"></div>
+                    <input type="file" id="pragas-foto-input" accept="image/*" capture="environment" multiple class="hidden" onchange="handlePestFotos('pragas',this)">
+                    <button type="button" id="pragas-foto-btn" onclick="document.getElementById('pragas-foto-input').click()" class="flex items-center gap-1.5 text-[10px] font-bold text-orange-500 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-2.5 py-1.5 rounded-lg transition-colors active:scale-95">
+                        <i data-lucide="camera" class="w-3 h-3"></i> <span id="pragas-foto-label">Adicionar Foto (0/5)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. MANEJO NUTRICIONAL / FITOSSANITÁRIO -->
+            <div id="section-manejo" class="bg-purple-50 p-5 rounded-2xl shadow-sm border border-purple-100">
+                <h2 class="text-sm font-bold text-purple-800 mb-1 flex items-center gap-2">
+                    <i data-lucide="flask-conical" class="text-purple-600 w-4 h-4"></i> Manejo Nutricional / Fitossanitário
+                </h2>
+                <p class="text-[9px] text-purple-400 font-bold uppercase tracking-wider mb-4">Adequado · Atenção · Irregular</p>
+                <div class="space-y-2 mb-4">
+                    <div class="bg-white rounded-xl p-3 border border-purple-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Adubação nitrogenada <span class="font-normal text-slate-400">(N)</span> realizada</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('manejo','nitro','ok')" id="manejo-nitro-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('manejo','nitro','atencao')" id="manejo-nitro-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('manejo','nitro','problema')" id="manejo-nitro-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-purple-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Aplicação de cálcio <span class="font-normal text-slate-400">(Ca)</span> realizada</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('manejo','calcio','ok')" id="manejo-calcio-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('manejo','calcio','atencao')" id="manejo-calcio-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('manejo','calcio','problema')" id="manejo-calcio-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-purple-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Adubação potássica <span class="font-normal text-slate-400">(K)</span> realizada</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('manejo','potassio','ok')" id="manejo-potassio-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('manejo','potassio','atencao')" id="manejo-potassio-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('manejo','potassio','problema')" id="manejo-potassio-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-purple-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Defensivo fitossanitário aplicado</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('manejo','defensivo','ok')" id="manejo-defensivo-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('manejo','defensivo','atencao')" id="manejo-defensivo-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('manejo','defensivo','problema')" id="manejo-defensivo-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-purple-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Bioestimulante / enraizador aplicado</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('manejo','bioestimulante','ok')" id="manejo-bioestimulante-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setCheck('manejo','bioestimulante','atencao')" id="manejo-bioestimulante-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('manejo','bioestimulante','problema')" id="manejo-bioestimulante-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Observações sobre Manejo</label>
+                    <input type="text" id="manejo-obs" oninput="updateState()" placeholder="Ex: Aplicação de boro foliar — sintomas de deficiência na linha 5..." class="w-full p-2 border border-purple-200 rounded-lg text-sm bg-white focus:ring-1 focus:ring-purple-400 outline-none">
+                </div>
+                <div class="pt-3 border-t border-purple-100">
+                    <div id="manejo-fotos-grid" class="grid grid-cols-5 gap-1 mb-1.5"></div>
+                    <input type="file" id="manejo-foto-input" accept="image/*" capture="environment" multiple class="hidden" onchange="handlePestFotos('manejo',this)">
+                    <button type="button" id="manejo-foto-btn" onclick="document.getElementById('manejo-foto-input').click()" class="flex items-center gap-1.5 text-[10px] font-bold text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1.5 rounded-lg transition-colors active:scale-95">
+                        <i data-lucide="camera" class="w-3 h-3"></i> <span id="manejo-foto-label">Adicionar Foto (0/5)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5. IRRIGAÇÃO DO BLOCO -->
+            <div id="section-irrigacao" class="hidden bg-cyan-50 p-5 rounded-2xl shadow-sm border border-cyan-100">
+                <h2 class="text-sm font-bold text-cyan-800 mb-1 flex items-center gap-2">
+                    <i data-lucide="droplets" class="text-cyan-600 w-4 h-4"></i> Irrigação do Bloco
+                </h2>
+                <p class="text-[9px] text-cyan-400 font-bold uppercase tracking-wider mb-4">Conforme · Atenção · Irregular</p>
+
+                <div class="mb-4">
+                    <label class="text-[10px] font-bold text-cyan-600 uppercase mb-1 block">Método de Irrigação</label>
+                    <select id="irrig-metodo" oninput="updateIrrigacao()" class="w-full p-2 border border-cyan-200 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-sm bg-white">
+                        <option value="">Selecione...</option>
+                        <option value="Gotejamento">Gotejamento</option>
+                        <option value="Microaspersão">Microaspersão</option>
+                        <option value="Aspersão">Aspersão</option>
+                        <option value="Pivô Central">Pivô Central</option>
+                        <option value="Sulcos">Sulcos</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+
+                <div class="space-y-2 mb-4">
+                    <div class="bg-white rounded-xl p-3 border border-cyan-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Turgor e hidratação das plantas</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setIrrigCheck('turgor','ok')" id="irrig-turgor-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setIrrigCheck('turgor','atencao')" id="irrig-turgor-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setIrrigCheck('turgor','problema')" id="irrig-turgor-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-cyan-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Déficit hídrico visível <span class="font-normal text-slate-400">(murcha / enrolamento)</span></span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setIrrigCheck('deficit','ok')" id="irrig-deficit-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setIrrigCheck('deficit','atencao')" id="irrig-deficit-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setIrrigCheck('deficit','problema')" id="irrig-deficit-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-cyan-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Frequência de irrigação seguida conforme plano</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setIrrigCheck('frequencia','ok')" id="irrig-frequencia-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setIrrigCheck('frequencia','atencao')" id="irrig-frequencia-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setIrrigCheck('frequencia','problema')" id="irrig-frequencia-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-cyan-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Volume / lâmina de água adequado</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setIrrigCheck('volume','ok')" id="irrig-volume-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setIrrigCheck('volume','atencao')" id="irrig-volume-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setIrrigCheck('volume','problema')" id="irrig-volume-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-cyan-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Distribuição uniforme na área do bloco</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setIrrigCheck('uniformidade','ok')" id="irrig-uniformidade-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setIrrigCheck('uniformidade','atencao')" id="irrig-uniformidade-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setIrrigCheck('uniformidade','problema')" id="irrig-uniformidade-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-cyan-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Sinais de encharcamento / excesso hídrico</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setIrrigCheck('excesso','ok')" id="irrig-excesso-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setIrrigCheck('excesso','atencao')" id="irrig-excesso-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setIrrigCheck('excesso','problema')" id="irrig-excesso-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-cyan-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Umidade do solo verificada</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setIrrigCheck('umidadeSolo','ok')" id="irrig-umidadeSolo-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">OK</button>
+                                <button type="button" onclick="setIrrigCheck('umidadeSolo','atencao')" id="irrig-umidadeSolo-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setIrrigCheck('umidadeSolo','problema')" id="irrig-umidadeSolo-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Irregular</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Observações sobre Irrigação</label>
+                    <input type="text" id="irrig-obs" oninput="updateIrrigacao()" placeholder="Ex: Linha 3 com emissores parcialmente entupidos..." class="w-full p-2 border border-cyan-200 rounded-lg text-sm bg-white focus:ring-1 focus:ring-cyan-400 outline-none">
+                </div>
+                <div class="pt-3 border-t border-cyan-100">
+                    <div id="irrigacao-fotos-grid" class="grid grid-cols-5 gap-1 mb-1.5"></div>
+                    <input type="file" id="irrigacao-foto-input" accept="image/*" capture="environment" multiple class="hidden" onchange="handlePestFotos('irrigacao',this)">
+                    <button type="button" id="irrigacao-foto-btn" onclick="document.getElementById('irrigacao-foto-input').click()" class="flex items-center gap-1.5 text-[10px] font-bold text-cyan-500 hover:text-cyan-700 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 px-2.5 py-1.5 rounded-lg transition-colors active:scale-95">
+                        <i data-lucide="camera" class="w-3 h-3"></i> <span id="irrigacao-foto-label">Adicionar Foto (0/5)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 6. LIMPEZA DO BLOCO -->
+            <div id="section-limpeza" class="hidden bg-lime-50 p-5 rounded-2xl shadow-sm border border-lime-100">
+                <h2 class="text-sm font-bold text-lime-800 mb-1 flex items-center gap-2">
+                    <i data-lucide="scissors" class="text-lime-600 w-4 h-4"></i> Limpeza do Bloco
+                </h2>
+                <p class="text-[9px] text-lime-400 font-bold uppercase tracking-wider mb-4">Limpo · Atenção · Com Mato</p>
+                <div class="space-y-2 mb-4">
+                    <div class="bg-white rounded-xl p-3 border border-lime-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Estado geral de limpeza do bloco</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('limpeza','estadoGeral','ok')" id="limpeza-estadoGeral-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Limpo</button>
+                                <button type="button" onclick="setCheck('limpeza','estadoGeral','atencao')" id="limpeza-estadoGeral-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('limpeza','estadoGeral','problema')" id="limpeza-estadoGeral-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Com Mato</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-lime-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Presença de plantas daninhas (mato)</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('limpeza','presencaMato','ok')" id="limpeza-presencaMato-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Limpo</button>
+                                <button type="button" onclick="setCheck('limpeza','presencaMato','atencao')" id="limpeza-presencaMato-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('limpeza','presencaMato','problema')" id="limpeza-presencaMato-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Com Mato</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-lime-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Cobertura do solo nas entrelinhas</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('limpeza','coberturaSolo','ok')" id="limpeza-coberturaSolo-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Limpo</button>
+                                <button type="button" onclick="setCheck('limpeza','coberturaSolo','atencao')" id="limpeza-coberturaSolo-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('limpeza','coberturaSolo','problema')" id="limpeza-coberturaSolo-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Com Mato</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-lime-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Capina / roçagem manual realizada</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('limpeza','limpezaManual','ok')" id="limpeza-limpezaManual-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Limpo</button>
+                                <button type="button" onclick="setCheck('limpeza','limpezaManual','atencao')" id="limpeza-limpezaManual-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('limpeza','limpezaManual','problema')" id="limpeza-limpezaManual-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Com Mato</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-lime-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Controle químico (herbicida) aplicado</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('limpeza','controleQuimico','ok')" id="limpeza-controleQuimico-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Limpo</button>
+                                <button type="button" onclick="setCheck('limpeza','controleQuimico','atencao')" id="limpeza-controleQuimico-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('limpeza','controleQuimico','problema')" id="limpeza-controleQuimico-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Com Mato</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Observações sobre Limpeza</label>
+                    <input type="text" id="limpeza-obs" oninput="updateState()" placeholder="Ex: Mato concentrado nas linhas 4 e 5..." class="w-full p-2 border border-lime-200 rounded-lg text-sm bg-white focus:ring-1 focus:ring-lime-400 outline-none">
+                </div>
+                <div class="pt-3 border-t border-lime-100">
+                    <div id="limpeza-fotos-grid" class="grid grid-cols-5 gap-1 mb-1.5"></div>
+                    <input type="file" id="limpeza-foto-input" accept="image/*" capture="environment" multiple class="hidden" onchange="handlePestFotos('limpeza',this)">
+                    <button type="button" id="limpeza-foto-btn" onclick="document.getElementById('limpeza-foto-input').click()" class="flex items-center gap-1.5 text-[10px] font-bold text-lime-500 hover:text-lime-700 bg-lime-50 hover:bg-lime-100 border border-lime-200 px-2.5 py-1.5 rounded-lg transition-colors active:scale-95">
+                        <i data-lucide="camera" class="w-3 h-3"></i> <span id="limpeza-foto-label">Adicionar Foto (0/5)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 7. TRANSPLANTIO -->
+            <div id="section-transplantio" class="hidden bg-amber-50 p-5 rounded-2xl shadow-sm border border-amber-100">
+                <h2 class="text-sm font-bold text-amber-800 mb-1 flex items-center gap-2">
+                    <i data-lucide="sprout" class="text-amber-600 w-4 h-4"></i> Transplantio do Bloco
+                </h2>
+                <p class="text-[9px] text-amber-400 font-bold uppercase tracking-wider mb-4">Boa · Atenção · Ruim</p>
+
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-amber-700 uppercase mb-1 block">Idade das Mudas (dias)</label>
+                        <input type="number" id="transp-diasMuda" oninput="updateState()" placeholder="Ex: 25" min="0" class="w-full p-2 border border-amber-200 rounded-lg text-sm bg-white focus:ring-1 focus:ring-amber-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-amber-700 uppercase mb-1 block">Perdas Estimadas (%)</label>
+                        <input type="number" id="transp-perdas" oninput="updateState()" placeholder="Ex: 5" min="0" max="100" class="w-full p-2 border border-amber-200 rounded-lg text-sm bg-white focus:ring-1 focus:ring-amber-400 outline-none">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="text-[10px] font-bold text-amber-700 uppercase mb-1 block">Variedade com Mais Perdas</label>
+                    <input type="text" id="transp-variedadePerdas" oninput="updateState()" placeholder="Ex: Avenger, Pacífico..." class="w-full p-2 border border-amber-200 rounded-lg text-sm bg-white focus:ring-1 focus:ring-amber-400 outline-none">
+                </div>
+
+                <div class="space-y-2 mb-4">
+                    <div class="bg-white rounded-xl p-3 border border-amber-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Qualidade geral das mudas transplantadas</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('transplantio','qualidadeMuda','ok')" id="transplantio-qualidadeMuda-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Boa</button>
+                                <button type="button" onclick="setCheck('transplantio','qualidadeMuda','atencao')" id="transplantio-qualidadeMuda-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('transplantio','qualidadeMuda','problema')" id="transplantio-qualidadeMuda-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Ruim</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-amber-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Uniformidade do stand no bloco</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('transplantio','uniformidade','ok')" id="transplantio-uniformidade-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Boa</button>
+                                <button type="button" onclick="setCheck('transplantio','uniformidade','atencao')" id="transplantio-uniformidade-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('transplantio','uniformidade','problema')" id="transplantio-uniformidade-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Ruim</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-amber-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Taxa de pegamento das mudas</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('transplantio','pegamento','ok')" id="transplantio-pegamento-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Boa</button>
+                                <button type="button" onclick="setCheck('transplantio','pegamento','atencao')" id="transplantio-pegamento-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('transplantio','pegamento','problema')" id="transplantio-pegamento-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Ruim</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-amber-100">
+                        <div class="flex justify-between items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Qualidade do sistema radicular das mudas</span>
+                            <div class="flex gap-1 shrink-0">
+                                <button type="button" onclick="setCheck('transplantio','raiz','ok')" id="transplantio-raiz-ok" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Boa</button>
+                                <button type="button" onclick="setCheck('transplantio','raiz','atencao')" id="transplantio-raiz-atencao" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Atenção</button>
+                                <button type="button" onclick="setCheck('transplantio','raiz','problema')" id="transplantio-raiz-problema" class="irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border border-slate-200 bg-slate-50 text-slate-400 transition-all">Ruim</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Observações sobre Transplantio</label>
+                    <input type="text" id="transp-obs" oninput="updateState()" placeholder="Ex: Mudas com raiz curta, replantio necessário nas linhas 2 e 7..." class="w-full p-2 border border-amber-200 rounded-lg text-sm bg-white focus:ring-1 focus:ring-amber-400 outline-none">
+                </div>
+                <div class="pt-3 border-t border-amber-100">
+                    <div id="transplantio-fotos-grid" class="grid grid-cols-5 gap-1 mb-1.5"></div>
+                    <input type="file" id="transplantio-foto-input" accept="image/*" capture="environment" multiple class="hidden" onchange="handlePestFotos('transplantio',this)">
+                    <button type="button" id="transplantio-foto-btn" onclick="document.getElementById('transplantio-foto-input').click()" class="flex items-center gap-1.5 text-[10px] font-bold text-amber-500 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1.5 rounded-lg transition-colors active:scale-95">
+                        <i data-lucide="camera" class="w-3 h-3"></i> <span id="transplantio-foto-label">Adicionar Foto (0/5)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- OBSERVAÇÕES GERAIS -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <i data-lucide="notebook-pen" class="text-slate-400 w-4 h-4"></i> Observações Gerais
+                </h2>
+                <textarea id="notesGeral" rows="3" oninput="updateState()" placeholder="Condições gerais do campo, anotações adicionais..." class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none resize-none"></textarea>
+            </div>
+
+            <!-- SALVAR E REGISTROS -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <button onclick="saveRecord()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg active:scale-95 mb-5">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span id="saveBtnLabel">Salvar Registro do Bloco</span>
+                </button>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-bold text-slate-700">Registros Salvos</h3>
+                    <button onclick="showClearAllModal()" class="text-xs text-red-400 hover:text-red-600 font-bold underline">Limpar Tudo</button>
+                </div>
+                <ul id="recordsList" class="space-y-2"></ul>
+            </div>
+        </div>
+
+        <!-- COLUNA PREVIEW -->
+        <div class="w-full lg:w-3/5 flex flex-col bg-slate-200 p-4 rounded-3xl border border-slate-300 min-h-[calc(100vh-6rem)]">
+            <div id="report-card" class="w-full flex-1 flex flex-col bg-white overflow-hidden border border-gray-200 shadow-sm relative" style="text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;">
+
+                <!-- Cabeçalho estilo relatório técnico -->
+                <div class="shrink-0 border-b border-gray-300">
+                    <!-- Topo: título | emissão -->
+                    <div class="grid px-5 py-3 gap-2" style="grid-template-columns:1fr auto; align-items:center;">
+                        <!-- Título alinhado à esquerda -->
+                        <div class="px-2">
+                            <div class="text-sm font-black text-slate-800 uppercase tracking-wide leading-tight">RELATÓRIO DE SUPERVISÃO</div>
+                            <div class="text-[9px] text-slate-500 font-semibold tracking-widest mt-0.5 uppercase">Monitoramento de Bloco de Brócolis</div>
+                        </div>
+                        <!-- Emissão -->
+                        <div class="text-right shrink-0">
+                            <div class="text-[7px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">EMISSÃO</div>
+                            <div id="headerInfo" class="text-sm font-black text-green-700 leading-tight whitespace-nowrap"></div>
+                        </div>
+                    </div>
+                    <!-- Sub-barra verde com dados do lote -->
+                    <div id="reportTitle" class="bg-green-700 px-5 py-1.5 text-white text-[9px] font-black text-center tracking-widest uppercase min-h-[24px]"></div>
+                </div>
+
+                <div id="reportContent" class="flex-1 overflow-y-auto bg-white">
+                    <div class="p-8 text-center text-slate-300 text-sm italic h-full flex items-center justify-center">Preencha os dados no formulário para visualizar o relatório.</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Foto Ampliada -->
+    <div id="fotoModal" class="fixed inset-0 bg-black/85 z-50 hidden flex flex-col justify-center items-center backdrop-blur-sm" onclick="closeFotoModal()">
+        <div class="relative max-w-[92vw] max-h-[88vh] flex flex-col items-center" onclick="event.stopPropagation()">
+            <img id="fotoModalImg" src="" class="max-w-full max-h-[80vh] rounded-xl shadow-2xl object-contain">
+            <!-- Navegação -->
+            <button id="fotoModalPrev" onclick="fotoModalNav(-1)" class="hidden absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 bg-black/50 hover:bg-black/80 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors">
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <button id="fotoModalNext" onclick="fotoModalNav(1)" class="hidden absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 bg-black/50 hover:bg-black/80 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors">
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+            <!-- Contador e fechar -->
+            <div class="flex items-center gap-4 mt-3">
+                <span id="fotoModalCounter" class="text-white/70 text-xs font-medium"></span>
+                <button onclick="closeFotoModal()" class="bg-white/10 hover:bg-white/25 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Limpar Tudo -->
+    <div id="clearAllModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm">
+            <h3 class="text-lg font-bold text-slate-800 text-center mb-5">Limpar todos os registros?</h3>
+            <div class="flex gap-3">
+                <button onclick="hideClearAllModal()" class="flex-1 px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">Cancelar</button>
+                <button onclick="confirmClearAll()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold">Limpar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Mensagem -->
+    <div id="messageModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm text-center">
+            <div id="msgIconContainer" class="mx-auto h-12 w-12 rounded-full mb-4 flex items-center justify-center"></div>
+            <h3 id="msgTitle" class="text-lg font-bold text-slate-800"></h3>
+            <p id="msgText" class="text-sm text-slate-500 mt-2 mb-4"></p>
+            <button onclick="hideMessageModal()" class="w-full px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-bold">OK</button>
+        </div>
+    </div>
+
+
+    <script>
+        // ── CONSTANTES ──────────────────────────────────────────────────
+        const PRAGAS_CHECKS = [
+            { key:'aspectoGeral',  label:'Aspecto geral das plantas (vigor / coloração)' },
+            { key:'traca',         label:'Traça-das-Crucíferas (Plutella xylostella)'    },
+            { key:'pugoes',        label:'Pulgões (Brevicoryne brassicae)'               },
+            { key:'lagarta',       label:'Lagarta-da-Couve (Ascia monuste)'              },
+            { key:'moscaBranca',   label:'Mosca-Branca (Bemisia tabaci)'                 },
+            { key:'acaros',        label:'Ácaros (Tetranychus urticae)'                  },
+            { key:'podridaoNegra', label:'Podridão Negra (Xanthomonas campestris)'       },
+            { key:'mildio',        label:'Míldio (Peronospora parasitica)'               },
+            { key:'alternaria',    label:'Alternária (Alternaria brassicae)'             },
+            { key:'podridaoMole',  label:'Podridão-Mole (Pectobacterium carotovorum)'    },
+            { key:'esclerotinia',  label:'Esclerotínia (Sclerotinia sclerotiorum)'       },
+        ];
+        const MANEJO_CHECKS = [
+            { key:'nitro',         label:'Adubação nitrogenada (N) realizada'          },
+            { key:'calcio',        label:'Aplicação de cálcio (Ca) realizada'           },
+            { key:'potassio',      label:'Adubação potássica (K) realizada'             },
+            { key:'defensivo',     label:'Defensivo fitossanitário aplicado'            },
+            { key:'bioestimulante',label:'Bioestimulante / enraizador aplicado'         },
+        ];
+        const IRRIG_CHECKS = [
+            { key:'turgor',       label:'Turgor e hidratação das plantas'               },
+            { key:'deficit',      label:'Déficit hídrico visível (murcha / enrolamento)'},
+            { key:'frequencia',   label:'Frequência de irrigação seguida conforme plano'},
+            { key:'volume',       label:'Volume / lâmina de água adequado'              },
+            { key:'uniformidade', label:'Distribuição uniforme na área do bloco'        },
+            { key:'excesso',      label:'Sinais de encharcamento / excesso hídrico'     },
+            { key:'umidadeSolo',  label:'Umidade do solo verificada'                    },
+        ];
+
+        const LIMPEZA_CHECKS = [
+            { key:'estadoGeral',     label:'Estado geral de limpeza do bloco'         },
+            { key:'presencaMato',    label:'Presença de plantas daninhas (mato)'       },
+            { key:'coberturaSolo',   label:'Cobertura do solo nas entrelinhas'         },
+            { key:'limpezaManual',   label:'Capina / roçagem manual realizada'         },
+            { key:'controleQuimico', label:'Controle químico (herbicida) aplicado'     },
+        ];
+        const TRANSPLANTIO_CHECKS = [
+            { key:'qualidadeMuda', label:'Qualidade geral das mudas transplantadas'    },
+            { key:'uniformidade',  label:'Uniformidade do stand no bloco'              },
+            { key:'pegamento',     label:'Taxa de pegamento das mudas'                 },
+            { key:'raiz',          label:'Qualidade do sistema radicular das mudas'    },
+        ];
+
+        // ── ESTADO GLOBAL ────────────────────────────────────────────────
+        let state = {
+            partner:'', date:'', lote:'', estagio:'', supervisor:'', qtdPlantas:'',
+            pragas:   { checklist:{ aspectoGeral:null, traca:null, pugoes:null, lagarta:null, moscaBranca:null, acaros:null, podridaoNegra:null, mildio:null, alternaria:null, podridaoMole:null, esclerotinia:null }, obs:'', fotos:[] },
+            manejo:   { checklist:{ nitro:null, calcio:null, potassio:null, defensivo:null, bioestimulante:null }, obs:'', fotos:[] },
+            notes:'',
+            vistorias: [],
+            irrigacao:    { metodo:'', checklist:{ turgor:null, deficit:null, frequencia:null, volume:null, uniformidade:null, excesso:null, umidadeSolo:null }, obs:'', fotos:[] },
+            limpeza:      { checklist:{ estadoGeral:null, presencaMato:null, coberturaSolo:null, limpezaManual:null, controleQuimico:null }, obs:'', fotos:[] },
+            transplantio: { diasMuda:'', perdas:'', variedadePerdas:'', checklist:{ qualidadeMuda:null, uniformidade:null, pegamento:null, raiz:null }, obs:'', fotos:[] }
+        };
+        let records       = JSON.parse(localStorage.getItem('spg_supervisor_v1')) || [];
+        let editingId     = null;
+        let isSharing     = false;
+
+        // ── POPULAÇAO DO SELECT DE LOTE ───────────────────────────────────
+        (function buildLoteOptions() {
+            const sel = document.getElementById('lote');
+            for(let i = 1; i <= 19; i++){
+                const o = document.createElement('option'); o.value = i; o.text = i; sel.add(o);
+            }
+            ['A','B','C','D','E'].forEach(l => {
+                const o = document.createElement('option'); o.value = l; o.text = l; sel.add(o);
+            });
+        })();
+
+        // ── CHECKLIST GENÉRICO ───────────────────────────────────────────
+        function setCheck(section, key, val) {
+            if(!state[section].checklist) state[section].checklist = {};
+            state[section].checklist[key] = state[section].checklist[key] === val ? null : val;
+            refreshCheckButtons(section, key);
+            renderReport();
+        }
+
+        function refreshCheckButtons(section, key) {
+            const val = state[section]?.checklist?.[key] || null;
+            const active = {
+                ok:       'border-green-400 bg-green-100 text-green-800',
+                atencao:  'border-yellow-400 bg-yellow-100 text-yellow-800',
+                problema: 'border-red-400 bg-red-100 text-red-800'
+            };
+            const off = 'border-slate-200 bg-slate-50 text-slate-400';
+            ['ok','atencao','problema'].forEach(s => {
+                const btn = document.getElementById(`${section}-${key}-${s}`);
+                if(!btn) return;
+                btn.className = `irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border transition-all ${val === s ? active[s] : off}`;
+            });
+        }
+
+        function refreshAllCheckButtons(section, checks) {
+            checks.forEach(c => refreshCheckButtons(section, c.key));
+        }
+
+        // ── SELETOR DE VISTORIAS ─────────────────────────────────────────
+        function toggleVistoria(tipo) {
+            const idx = state.vistorias.indexOf(tipo);
+            if(idx >= 0) state.vistorias.splice(idx, 1);
+            else state.vistorias.push(tipo);
+            updateVistoriaButtons();
+            updateSectionVisibility();
+            renderReport();
+        }
+
+        function updateVistoriaButtons() {
+            const configs = {
+                pragas:      { on:'border-orange-400 bg-orange-100 text-orange-800', off:'border-slate-200 bg-slate-50 text-slate-400' },
+                manejo:      { on:'border-purple-400 bg-purple-100 text-purple-800', off:'border-slate-200 bg-slate-50 text-slate-400' },
+                irrigacao:   { on:'border-cyan-400 bg-cyan-100 text-cyan-800',       off:'border-slate-200 bg-slate-50 text-slate-400' },
+                limpeza:     { on:'border-lime-400 bg-lime-100 text-lime-800',        off:'border-slate-200 bg-slate-50 text-slate-400' },
+                transplantio:{ on:'border-amber-400 bg-amber-100 text-amber-800',    off:'border-slate-200 bg-slate-50 text-slate-400' }
+            };
+            Object.keys(configs).forEach(tipo => {
+                const btn = document.getElementById(`btn-v-${tipo}`);
+                if(!btn) return;
+                const active = state.vistorias.includes(tipo);
+                btn.className = `vistoria-btn px-3 py-2 rounded-xl text-xs border-2 font-bold flex items-center gap-1.5 active:scale-95 transition-all ${active ? configs[tipo].on : configs[tipo].off}`;
+            });
+        }
+
+        function updateSectionVisibility() {
+            ['pragas','manejo','irrigacao','limpeza','transplantio'].forEach(tipo => {
+                const sec = document.getElementById(`section-${tipo}`);
+                if(sec) sec.classList.toggle('hidden', !state.vistorias.includes(tipo));
+            });
+        }
+
+        function _refreshIrrigBtn(key) {
+            const val = state.irrigacao?.checklist?.[key] || null;
+            const active = {
+                ok:       'border-green-400 bg-green-100 text-green-800',
+                atencao:  'border-yellow-400 bg-yellow-100 text-yellow-800',
+                problema: 'border-red-400 bg-red-100 text-red-800'
+            };
+            const off = 'border-slate-200 bg-slate-50 text-slate-400';
+            ['ok','atencao','problema'].forEach(s => {
+                const btn = document.getElementById(`irrig-${key}-${s}`);
+                if(btn) btn.className = `irrig-btn h-6 px-2 rounded-md text-[9px] font-bold border transition-all ${val === s ? active[s] : off}`;
+            });
+        }
+        function setIrrigCheck(key, val) {
+            if(!state.irrigacao.checklist) state.irrigacao.checklist = {};
+            state.irrigacao.checklist[key] = state.irrigacao.checklist[key] === val ? null : val;
+            _refreshIrrigBtn(key);
+            renderReport();
+        }
+        function refreshAllIrrigButtons() { IRRIG_CHECKS.forEach(c => _refreshIrrigBtn(c.key)); }
+
+        function fmtQtdPlantas(input) {
+            const raw = input.value.replace(/\D/g, '');
+            input.value = raw ? parseInt(raw).toLocaleString('pt-BR') : '';
+            updateState();
+        }
+
+        function updateIrrigacao() {
+            state.irrigacao.metodo = document.getElementById('irrig-metodo').value;
+            state.irrigacao.obs    = document.getElementById('irrig-obs').value;
+            renderReport();
+        }
+
+        // ── FOTOS DE PRAGAS ──────────────────────────────────────────────
+        const MAX_FOTOS = 5;
+        let _modalPest = null, _modalIdx = 0;
+
+        function _getFotos(section) {
+            return state[section]?.fotos || [];
+        }
+
+        function resizeFoto(file, maxW, cb) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const scale = Math.min(1, maxW / img.width);
+                    const canvas = document.createElement('canvas');
+                    canvas.width  = Math.round(img.width  * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    cb(canvas.toDataURL('image/jpeg', 0.80));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handlePestFotos(pest, input) {
+            const fotos = _getFotos(pest);
+            const slots = MAX_FOTOS - fotos.length;
+            if(slots <= 0) return;
+            const files = Array.from(input.files).slice(0, slots);
+            let done = 0;
+            files.forEach(file => {
+                resizeFoto(file, 1200, (base64) => {
+                    _getFotos(pest).push(base64);
+                    if(++done === files.length) { refreshPestGrid(pest); renderReport(); }
+                });
+            });
+            input.value = '';
+        }
+
+        function refreshPestGrid(pest) {
+            const fotos = _getFotos(pest);
+            const grid  = document.getElementById(`${pest}-fotos-grid`);
+            const btn   = document.getElementById(`${pest}-foto-btn`);
+            const label = document.getElementById(`${pest}-foto-label`);
+            if(!grid) return;
+
+            grid.innerHTML = fotos.map((f, i) => `
+                <div class="relative group">
+                    <img src="${f}" class="w-full aspect-square object-cover rounded-lg border border-slate-200 cursor-pointer" onclick="openFotoModal('${pest}',${i})">
+                    <button type="button" onclick="removeFotoIdx('${pest}',${i})" class="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center leading-none opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                </div>`).join('');
+
+            if(label) label.textContent = `Adicionar Foto (${fotos.length}/${MAX_FOTOS})`;
+            if(btn)   btn.classList.toggle('hidden', fotos.length >= MAX_FOTOS);
+        }
+
+        function removeFotoIdx(pest, idx) {
+            const fotos = _getFotos(pest);
+            fotos.splice(idx, 1);
+            refreshPestGrid(pest);
+            renderReport();
+        }
+
+        function openFotoModal(pest, idx) {
+            const fotos = _getFotos(pest);
+            if(!fotos.length) return;
+            _modalPest = pest; _modalIdx = idx || 0;
+            _renderModal();
+            document.getElementById('fotoModal').classList.remove('hidden');
+        }
+
+        function _renderModal() {
+            const fotos = _getFotos(_modalPest);
+            document.getElementById('fotoModalImg').src = fotos[_modalIdx] || '';
+            const counter = document.getElementById('fotoModalCounter');
+            if(counter) counter.textContent = `${_modalIdx+1} / ${fotos.length}`;
+            document.getElementById('fotoModalPrev').classList.toggle('hidden', fotos.length <= 1);
+            document.getElementById('fotoModalNext').classList.toggle('hidden', fotos.length <= 1);
+        }
+
+        function fotoModalNav(dir) {
+            const len = _getFotos(_modalPest).length;
+            _modalIdx = (_modalIdx + dir + len) % len;
+            _renderModal();
+        }
+
+        function closeFotoModal() {
+            document.getElementById('fotoModal').classList.add('hidden');
+        }
+
+        // ── ESTADO ───────────────────────────────────────────────────────
+        function updateState() {
+            state.partner      = document.getElementById('partner').value;
+            state.date         = document.getElementById('appDate').value;
+            state.lote         = document.getElementById('lote').value;
+            state.estagio      = document.getElementById('estagio').value;
+            state.supervisor   = document.getElementById('supervisor').value;
+            state.qtdPlantas   = document.getElementById('qtdPlantas').value.replace(/\D/g, '');
+            state.pragas.obs   = document.getElementById('pragas-obs').value;
+            state.manejo.obs   = document.getElementById('manejo-obs').value;
+            state.notes        = document.getElementById('notesGeral').value;
+            state.irrigacao.metodo = document.getElementById('irrig-metodo').value;
+            state.irrigacao.obs    = document.getElementById('irrig-obs').value;
+            state.limpeza.obs      = document.getElementById('limpeza-obs').value;
+            state.transplantio.diasMuda        = document.getElementById('transp-diasMuda').value;
+            state.transplantio.perdas          = document.getElementById('transp-perdas').value;
+            state.transplantio.variedadePerdas = document.getElementById('transp-variedadePerdas').value;
+            state.transplantio.obs             = document.getElementById('transp-obs').value;
+
+            renderReport();
+        }
+
+        // ── RENDERIZAÇÃO DO RELATÓRIO ─────────────────────────────────────
+        function fmtDate(d) {
+            if(!d) return '';
+            const p = d.split('-');
+            return `${p[2]}/${p[1]}/${p[0]}`;
+        }
+
+        function renderReport() {
+            const content = document.getElementById('reportContent');
+            const title   = document.getElementById('reportTitle');
+            const hdrInfo = document.getElementById('headerInfo');
+
+            if(!state.partner && !state.date && !state.lote) {
+                title.innerHTML  = '';
+                hdrInfo.innerHTML= '';
+                content.innerHTML= '<div style="padding:2rem; text-align:center; color:#cbd5e1; font-size:0.8rem; font-style:italic; height:100%; display:flex; align-items:center; justify-content:center;">Preencha os dados no formulário para visualizar o relatório.</div>';
+                return;
+            }
+
+            // Cabeçalho dinâmico
+            const now = new Date();
+            const hhmm = now.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+            hdrInfo.innerHTML = `${fmtDate(state.date)||'—'} às ${hhmm}`;
+            title.innerHTML   = [
+                state.lote    ? 'LOTE ' + state.lote : '',
+                state.partner || '',
+                state.estagio ? state.estagio.toUpperCase() : ''
+            ].filter(Boolean).join('  ·  ');
+
+            // ── helpers ──────────────────────────────────────────────
+            const S = (css) => `style="${css}"`;
+            const BORDER   = 'border-bottom:1px solid #e2e8f0;';
+            const TH_STYLE = 'font-size:7px; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:0.1em;';
+            const TD_STYLE = 'font-size:9px; color:#334155;';
+
+            const secHeader = (num, label) =>
+                `<div ${S('background:#f8fafc; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; padding:6px 16px;')}>
+                    <span ${S('font-size:9px; font-weight:900; color:#15803d; text-transform:uppercase; letter-spacing:0.12em;')}>${num}. ${label}</span>
+                </div>`;
+
+            const dataRow = (label, value, valColor='#0f172a') =>
+                `<div ${S('display:flex; justify-content:space-between; align-items:center; padding:7px 16px; '+BORDER)}>
+                    <span ${S('font-size:8px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.08em;')}>${label}</span>
+                    <span ${S('font-size:10px; font-weight:800; color:'+valColor+';')}>${value}</span>
+                </div>`;
+
+
+            let html = '';
+            let _sec = 0;
+            const nextSec = () => ++_sec;
+
+            // ── 1. IDENTIFICAÇÃO E FENOLOGIA ──────────────────────────
+            html += secHeader(nextSec(), 'Identificação e Fenologia');
+            html += dataRow('Local', state.partner || '—');
+            html += dataRow('Data de Registro', fmtDate(state.date) || '—');
+            html += dataRow('Lote / Bloco', state.lote || '—', '#15803d');
+            if(state.estagio) {
+                const eCor = { 'Vegetativo':'#166534','Iniciação Floral':'#4d7c0f','Botão Floral Visível':'#854d0e','Inflorescência em Desenvolvimento':'#9a3412','Ponto de Colheita':'#15803d','Pós-Colheita':'#475569' };
+                html += dataRow('Estágio da Inflorescência', state.estagio, eCor[state.estagio]||'#0f172a');
+            }
+            html += dataRow('Supervisor do Bloco', state.supervisor || '—', '#0f172a');
+            if(state.qtdPlantas) html += dataRow('Quantidade de Plantas', parseInt(state.qtdPlantas).toLocaleString('pt-BR') + ' plantas', '#0f172a');
+            if(state.vistorias.length > 0) {
+                const vLabels = { pragas:'Pragas e Doenças', manejo:'Manejo Nutricional', irrigacao:'Irrigação do Bloco' };
+                const vColors = { pragas:'#9a3412;background:#fff7ed', manejo:'#6d28d9;background:#f5f3ff', irrigacao:'#155e75;background:#ecfeff' };
+                const badges = state.vistorias.map(v => `<span style="display:inline-block;color:${vColors[v]||'#0f172a;background:#f1f5f9'};font-size:7px;font-weight:900;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-left:4px;">${vLabels[v]||v}</span>`).join('');
+                html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;border-bottom:1px solid #e2e8f0;">
+                    <span style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">VISTORIAS REALIZADAS</span>
+                    <div>${badges}</div>
+                </div>`;
+            }
+
+            // ── helper checklist report ───────────────────────────────
+            const CHK_ST = {
+                ok:       { label:'OK',       bg:'#dcfce7', color:'#15803d' },
+                atencao:  { label:'ATENÇÃO',  bg:'#fef9c3', color:'#a16207' },
+                problema: { label:'PROBLEMA', bg:'#fee2e2', color:'#991b1b' },
+            };
+            const PRAGAS_CHK_ST = {
+                ok:       { label:'AUSENTE',   bg:'#dcfce7', color:'#15803d' },
+                atencao:  { label:'ATENÇÃO',   bg:'#fef9c3', color:'#a16207' },
+                problema: { label:'DETECTADO', bg:'#fee2e2', color:'#991b1b' },
+            };
+            const MANEJO_CHK_ST = {
+                ok:       { label:'ADEQUADO',  bg:'#dcfce7', color:'#15803d' },
+                atencao:  { label:'ATENÇÃO',   bg:'#fef9c3', color:'#a16207' },
+                problema: { label:'IRREGULAR', bg:'#fee2e2', color:'#991b1b' },
+            };
+            const LIMPEZA_CHK_ST = {
+                ok:       { label:'LIMPO',    bg:'#dcfce7', color:'#15803d' },
+                atencao:  { label:'ATENÇÃO',  bg:'#fef9c3', color:'#a16207' },
+                problema: { label:'COM MATO', bg:'#fee2e2', color:'#991b1b' },
+            };
+            const TRANSPLANTIO_CHK_ST = {
+                ok:       { label:'BOA',    bg:'#dcfce7', color:'#15803d' },
+                atencao:  { label:'REGULAR',bg:'#fef9c3', color:'#a16207' },
+                problema: { label:'RUIM',   bg:'#fee2e2', color:'#991b1b' },
+            };
+            const renderChecklistSection = (checks, sectionKey, headerBg, rowBg1, rowBg2, borderColor, stMap = CHK_ST) => {
+                const sec = state[sectionKey];
+                html += `<div ${S('display:grid;grid-template-columns:1fr auto;background:'+headerBg+';border-bottom:1px solid '+borderColor+';padding:4px 16px;')}>
+                    <span ${S(TH_STYLE)}>ITEM</span>
+                    <span ${S(TH_STYLE)}>STATUS</span>
+                </div>`;
+                checks.forEach((c, i) => {
+                    const val = sec?.checklist?.[c.key] || null;
+                    const st  = val ? stMap[val] : { label:'—', bg:'#f1f5f9', color:'#94a3b8' };
+                    const bg  = i%2===0 ? rowBg1 : rowBg2;
+                    html += `<div ${S('display:grid;grid-template-columns:1fr auto;border-bottom:1px solid '+borderColor+';padding:8px 16px;background:'+bg+';align-items:center;')}>
+                        <span ${S('font-size:9px;font-weight:700;color:#1e293b;')}>${c.label}</span>
+                        <span ${S('display:inline-block;background:'+st.bg+';color:'+st.color+';font-size:7px;font-weight:900;text-transform:uppercase;padding:2px 8px;border-radius:3px;white-space:nowrap;')}>${st.label}</span>
+                    </div>`;
+                });
+                if(sec?.obs) html += `<div ${S('padding:8px 16px;border-bottom:1px solid '+borderColor+';font-size:8px;color:#475569;font-style:italic;')}>${sec.obs}</div>`;
+                const fotos = sec?.fotos || [];
+                if(fotos.length) {
+                    html += `<div ${S('padding:4px 16px;background:'+headerBg+';border-bottom:1px solid '+borderColor+';')}>
+                        <span ${S('font-size:7px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;')}>📷 Evidências Fotográficas</span>
+                    </div>`;
+                    const pairs = [];
+                    for(let k=0;k<fotos.length;k+=2) pairs.push(fotos.slice(k,k+2));
+                    const grid = pairs.map((pair,ri) =>
+                        `<div style="display:grid;grid-template-columns:${pair.length===2?'1fr 1fr':'1fr'};gap:6px;margin-bottom:${ri<pairs.length-1?'6px':'0'};">
+                            ${pair.map((f,fi)=>`<img src="${f}" onclick="openFotoModal('${sectionKey}',${ri*2+fi})" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;cursor:pointer;display:block;">`).join('')}
+                        </div>`).join('');
+                    html += `<div ${S('padding:8px 16px 12px;border-bottom:1px solid '+borderColor+';')}>${grid}</div>`;
+                }
+            };
+
+            // ── 2. PRAGAS E DOENÇAS ───────────────────────────────────
+            if(state.vistorias.includes('pragas')) {
+                html += secHeader(nextSec(), 'Monitoramento de Pragas e Doenças');
+                renderChecklistSection(PRAGAS_CHECKS, 'pragas', '#fff7ed', '#ffffff', '#fffaf5', '#fed7aa', PRAGAS_CHK_ST);
+            } // fim pragas
+
+            // ── 3. MANEJO NUTRICIONAL ─────────────────────────────────
+            if(state.vistorias.includes('manejo')) {
+                html += secHeader(nextSec(), 'Manejo Nutricional / Fitossanitário');
+                renderChecklistSection(MANEJO_CHECKS, 'manejo', '#faf5ff', '#ffffff', '#fdf4ff', '#e9d5ff', MANEJO_CHK_ST);
+            } // fim manejo
+
+            // ── 5. IRRIGAÇÃO ─────────────────────────────────────────
+            if(state.vistorias.includes('irrigacao')) {
+            html += secHeader(nextSec(), 'Irrigação do Bloco');
+            const irr = state.irrigacao;
+            if(irr.metodo) html += dataRow('Método de Irrigação', irr.metodo, '#0891b2');
+            // Checklist
+            const IRRIG_ST = {
+                ok:       { label:'CONFORME',  bg:'#dcfce7', color:'#15803d' },
+                atencao:  { label:'ATENÇÃO',   bg:'#fef9c3', color:'#a16207' },
+                problema: { label:'IRREGULAR', bg:'#fee2e2', color:'#991b1b' },
+            };
+            html += `<div ${S('display:grid; grid-template-columns:1fr auto; background:#f0fdfa; border-bottom:1px solid #a5f3fc; padding:4px 16px;')}>
+                <span ${S('font-size:7px;font-weight:900;color:#0e7490;text-transform:uppercase;letter-spacing:0.1em;')}>ITEM VERIFICADO</span>
+                <span ${S('font-size:7px;font-weight:900;color:#0e7490;text-transform:uppercase;letter-spacing:0.1em;')}>STATUS</span>
+            </div>`;
+            IRRIG_CHECKS.forEach((c, i) => {
+                const val = irr.checklist?.[c.key] || null;
+                const st  = val ? IRRIG_ST[val] : { label:'—', bg:'#f1f5f9', color:'#94a3b8' };
+                const bg  = i%2===0 ? '#ffffff' : '#f0fdfa';
+                html += `<div ${S('display:grid;grid-template-columns:1fr auto;border-bottom:1px solid #cffafe;padding:8px 16px;background:'+bg+';align-items:center;')}>
+                    <span ${S('font-size:9px;font-weight:700;color:#1e293b;')}>${c.label}</span>
+                    <span ${S('display:inline-block;background:'+st.bg+';color:'+st.color+';font-size:7px;font-weight:900;text-transform:uppercase;padding:2px 8px;border-radius:3px;white-space:nowrap;')}>${st.label}</span>
+                </div>`;
+            });
+            if(irr.obs) html += `<div ${S('padding:8px 16px;border-bottom:1px solid #cffafe;font-size:8px;color:#164e63;font-style:italic;')}>${irr.obs}</div>`;
+            const irrFotos = irr.fotos || [];
+            if(irrFotos.length) {
+                html += `<div ${S('padding:4px 16px;background:#f0fdfa;border-bottom:1px solid #a5f3fc;')}>
+                    <span ${S('font-size:7px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;')}>📷 Evidências Fotográficas</span>
+                </div>`;
+                const iPairs = [];
+                for(let k=0;k<irrFotos.length;k+=2) iPairs.push(irrFotos.slice(k,k+2));
+                const iGrid = iPairs.map((pair,ri) =>
+                    `<div style="display:grid;grid-template-columns:${pair.length===2?'1fr 1fr':'1fr'};gap:6px;margin-bottom:${ri<iPairs.length-1?'6px':'0'};">
+                        ${pair.map((f,fi)=>`<img src="${f}" onclick="openFotoModal('irrigacao',${ri*2+fi})" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;cursor:pointer;display:block;">`).join('')}
+                    </div>`
+                ).join('');
+                html += `<div ${S('padding:8px 16px 12px;border-bottom:1px solid #cffafe;background:#ecfeff;')}>${iGrid}</div>`;
+            }
+            } // fim irrigacao
+
+            // ── LIMPEZA DO BLOCO ──────────────────────────────────────
+            if(state.vistorias.includes('limpeza')) {
+                html += secHeader(nextSec(), 'Limpeza do Bloco');
+                renderChecklistSection(LIMPEZA_CHECKS, 'limpeza', '#f7fee7', '#ffffff', '#f7fee7', '#bef264', LIMPEZA_CHK_ST);
+            } // fim limpeza
+
+            // ── TRANSPLANTIO ──────────────────────────────────────────
+            if(state.vistorias.includes('transplantio')) {
+                html += secHeader(nextSec(), 'Transplantio do Bloco');
+                const tr = state.transplantio;
+                if(tr.diasMuda)        html += dataRow('Idade das Mudas', tr.diasMuda + ' dias', '#b45309');
+                if(tr.perdas)          html += dataRow('Perdas Estimadas', tr.perdas + '%', '#b45309');
+                if(tr.variedadePerdas) html += dataRow('Variedade com Mais Perdas', tr.variedadePerdas, '#b45309');
+                renderChecklistSection(TRANSPLANTIO_CHECKS, 'transplantio', '#fffbeb', '#ffffff', '#fffbeb', '#fcd34d', TRANSPLANTIO_CHK_ST);
+            } // fim transplantio
+
+            // ── OBSERVAÇÕES ───────────────────────────────────────────
+            html += secHeader(nextSec(), 'Observações e Evidências');
+            html += `<div ${S('padding:12px 16px; font-size:9px; line-height:1.6; color:'+(state.notes?'#475569':'#94a3b8')+'; font-style:'+(state.notes?'normal':'italic')+'; min-height:48px;')}>${state.notes||'Nenhuma observação.'}</div>`;
+
+            content.innerHTML = html;
+        }
+
+        // ── SALVAR REGISTRO ───────────────────────────────────────────────
+        function saveRecord() {
+            if(!state.partner || !state.date || !state.lote) {
+                showMessageModal('Atenção', 'Preencha Local, Data e Lote antes de salvar.', 'error');
+                return;
+            }
+            const record = JSON.parse(JSON.stringify(state));
+            record.id = editingId || Date.now();
+
+            if(editingId !== null) {
+                const idx = records.findIndex(r => r.id === editingId);
+                if(idx >= 0) records[idx] = record; else records.push(record);
+                editingId = null;
+                document.getElementById('saveBtnLabel').innerText = 'Salvar Registro do Bloco';
+            } else {
+                records.push(record);
+            }
+            localStorage.setItem('spg_supervisor_v1', JSON.stringify(records));
+            showMessageModal('Salvo!', `Registro do Lote ${state.lote} salvo com sucesso.`, 'success');
+            renderRecordsList();
+        }
+
+        function renderRecordsList() {
+            const list = document.getElementById('recordsList');
+            if(!records.length) {
+                list.innerHTML = '<li class="text-center py-2 text-xs text-slate-400">Nenhum registro salvo.</li>';
+                return;
+            }
+            list.innerHTML = records.slice().reverse().map(r => `
+                <li class="flex justify-between items-center p-2.5 rounded-lg border border-slate-100 bg-slate-50">
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-700 uppercase">Lote ${r.lote} · ${r.partner}</div>
+                        <div class="text-[10px] text-slate-400">${fmtDate(r.date)}${r.estagio?' · '+r.estagio:''}</div>
+                    </div>
+                    <div class="flex gap-1 ml-2">
+                        <button onclick="loadRecord(${r.id})" class="text-blue-500 p-1.5 hover:bg-blue-50 rounded-md transition-colors" title="Editar"><i data-lucide="pencil" class="w-3 h-3"></i></button>
+                        <button onclick="deleteRecord(${r.id})" class="text-red-400 p-1.5 hover:bg-red-50 rounded-md transition-colors" title="Excluir"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                    </div>
+                </li>`).join('');
+            lucide.createIcons();
+        }
+
+        function loadRecord(id) {
+            const r = records.find(rec => rec.id === id);
+            if(!r) return;
+            editingId = id;
+
+            document.getElementById('partner').value    = r.partner    || '';
+            document.getElementById('appDate').value    = r.date       || '';
+            document.getElementById('lote').value       = r.lote       || '';
+            document.getElementById('estagio').value    = r.estagio    || '';
+            document.getElementById('supervisor').value  = r.supervisor  || '';
+            document.getElementById('qtdPlantas').value  = r.qtdPlantas ? parseInt(r.qtdPlantas).toLocaleString('pt-BR') : '';
+            document.getElementById('notesGeral').value = r.notes      || '';
+
+            state = JSON.parse(JSON.stringify(r));
+            if(!state.vistorias) state.vistorias = ['pragas','manejo'];
+            if(!state.pragas)   state.pragas   = { checklist:{}, obs:'', fotos:[] };
+            if(!state.manejo)   state.manejo   = { checklist:{}, obs:'', fotos:[] };
+            if(!state.irrigacao)    state.irrigacao    = { metodo:'', checklist:{}, obs:'', fotos:[] };
+            if(!state.irrigacao.checklist) state.irrigacao.checklist = {};
+            if(!state.limpeza)      state.limpeza      = { checklist:{}, obs:'', fotos:[] };
+            if(!state.transplantio) state.transplantio = { diasMuda:'', perdas:'', variedadePerdas:'', checklist:{}, obs:'', fotos:[] };
+
+            // Restaurar campos de obs e inputs
+            document.getElementById('pragas-obs').value           = state.pragas.obs || '';
+            document.getElementById('manejo-obs').value           = state.manejo.obs || '';
+            document.getElementById('irrig-metodo').value         = state.irrigacao.metodo || '';
+            document.getElementById('irrig-obs').value            = state.irrigacao.obs    || '';
+            document.getElementById('limpeza-obs').value          = state.limpeza.obs || '';
+            document.getElementById('transp-diasMuda').value      = state.transplantio.diasMuda || '';
+            document.getElementById('transp-perdas').value        = state.transplantio.perdas || '';
+            document.getElementById('transp-variedadePerdas').value = state.transplantio.variedadePerdas || '';
+            document.getElementById('transp-obs').value           = state.transplantio.obs || '';
+
+            refreshAllCheckButtons('pragas',      PRAGAS_CHECKS);
+            refreshAllCheckButtons('manejo',       MANEJO_CHECKS);
+            refreshAllIrrigButtons();
+            refreshAllCheckButtons('limpeza',      LIMPEZA_CHECKS);
+            refreshAllCheckButtons('transplantio', TRANSPLANTIO_CHECKS);
+
+            // Restaurar grids de fotos
+            ['pragas','manejo','irrigacao','limpeza','transplantio'].forEach(s => refreshPestGrid(s));
+
+            updateVistoriaButtons();
+            updateSectionVisibility();
+            document.getElementById('saveBtnLabel').innerText = 'Salvar Alterações';
+            renderReport();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteRecord(id) {
+            records = records.filter(r => r.id !== id);
+            if(editingId === id) editingId = null;
+            localStorage.setItem('spg_supervisor_v1', JSON.stringify(records));
+            renderRecordsList();
+        }
+
+        // ── MODAIS ────────────────────────────────────────────────────────
+        function showClearAllModal()  { document.getElementById('clearAllModal').classList.remove('hidden'); }
+        function hideClearAllModal()  { document.getElementById('clearAllModal').classList.add('hidden'); }
+        function confirmClearAll()    { records = []; localStorage.removeItem('spg_supervisor_v1'); renderRecordsList(); hideClearAllModal(); }
+
+        function showMessageModal(title, msg, type) {
+            document.getElementById('msgTitle').innerText = title;
+            document.getElementById('msgText').innerText  = msg;
+            const ic = document.getElementById('msgIconContainer');
+            ic.className = `mx-auto h-12 w-12 rounded-full mb-4 flex items-center justify-center ${type==='success'?'bg-green-100':'bg-red-100'}`;
+            ic.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="h-6 w-6 ${type==='success'?'text-green-600':'text-red-600'}"></i>`;
+            document.getElementById('messageModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+        function hideMessageModal()   { document.getElementById('messageModal').classList.add('hidden'); }
+
+        async function downloadPDF() {
+            if(!state.partner || !state.date || !state.lote) {
+                showMessageModal('Atenção', 'Preencha Local, Data e Lote antes de gerar o PDF.', 'error');
+                return;
+            }
+            if(isSharing) return;
+            isSharing = true;
+            const btnSpan = document.querySelector('button[onclick="downloadPDF()"] span');
+            if(btnSpan) btnSpan.innerText = 'Gerando PDF...';
+
+            const card    = document.getElementById('report-card');
+            const content = document.getElementById('reportContent');
+            const prevCardCSS    = card.style.cssText;
+            const prevContentCSS = content.style.cssText;
+
+            // Expande para captura completa (sem overflow hidden)
+            card.style.cssText    = 'width:680px; max-width:680px; height:auto; overflow:visible; box-shadow:none; border:1px solid #e2e8f0;';
+            content.style.cssText = 'height:auto; overflow:visible; max-height:none;';
+
+            try {
+                // Aguarda todas as imagens carregarem
+                await Promise.all(Array.from(card.querySelectorAll('img')).map(img =>
+                    img.complete ? Promise.resolve() : new Promise(r => { img.onload=r; img.onerror=r; })
+                ));
+
+                const pixelRatio = 3;
+                const canvas = await htmlToImage.toCanvas(card, {
+                    pixelRatio,
+                    backgroundColor: '#ffffff',
+                    cacheBust: true
+                });
+
+                // Dimensões do PDF derivadas diretamente do tamanho capturado
+                // 1 CSS px = 25.4/96 mm (~0.2646mm a 96dpi)
+                const pxToMm    = 25.4 / 96;
+                const captureW  = canvas.width  / pixelRatio;
+                const captureH  = canvas.height / pixelRatio;
+                const pageW_mm  = captureW * pxToMm;
+                const pageH_mm  = captureH * pxToMm; // página única com altura do conteúdo
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pageW_mm, pageH_mm] });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.92);
+                pdf.addImage(imgData, 'JPEG', 0, 0, pageW_mm, pageH_mm);
+
+                const dateStr  = state.date ? state.date.split('-').reverse().join('/') : new Date().toISOString().slice(0,10).split('-').reverse().join('/');
+                const blocoStr = state.lote ? `Bloco ${state.lote}` : 'Bloco';
+                const filename = `Relatório - ${blocoStr} (${dateStr}).pdf`;
+                pdf.save(filename);
+
+            } catch(err) {
+                console.error(err);
+                showMessageModal('Erro', 'Falha ao gerar o PDF. Verifique o console.', 'error');
+            } finally {
+                card.style.cssText    = prevCardCSS;
+                content.style.cssText = prevContentCSS;
+                if(btnSpan) btnSpan.textContent = 'Gerar e Baixar PDF';
+                isSharing = false;
+            }
+        }
+
+        // ── INIT ──────────────────────────────────────────────────────────
+        window.onload = () => {
+            renderRecordsList();
+            updateVistoriaButtons();
+            updateSectionVisibility();
+            lucide.createIcons();
+            document.querySelectorAll('[id^="pragas-"][id$="-ok"]').forEach(b => b.textContent = 'Ausente');
+            document.querySelectorAll('[id^="pragas-"][id$="-problema"]').forEach(b => b.textContent = 'Detectado');
+            document.querySelectorAll('[id^="manejo-"][id$="-ok"]').forEach(b => b.textContent = 'Adequado');
+            document.querySelectorAll('[id^="irrig-"][id$="-ok"]').forEach(b => b.textContent = 'Conforme');
+        };
+    </script>
+</body>
+</html>
